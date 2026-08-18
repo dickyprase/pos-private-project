@@ -1,59 +1,163 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# KopiPOS
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+KopiPOS adalah aplikasi point-of-sale single-store untuk coffee shop. UI kasir memakai Laravel Livewire, sedangkan integrasi eksternal memakai REST API dengan Laravel Sanctum.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.3, Laravel 12, Livewire 3
+- MySQL 8.0
+- Vite + Tailwind CSS
+- Laravel Sanctum untuk API token
+- Scribe untuk dokumentasi interaktif dan Postman collection
+- Web Bluetooth BLE/GATT untuk printer thermal RPP02N 58 mm
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Setup
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```bash
+git clone https://github.com/dickyprase/pos-private-project.git
+cd pos-private-project
+composer install
+cp .env.example .env
+php artisan key:generate
+npm install
+php artisan migrate --seed
+npm run build
+php artisan serve
+```
 
-## Learning Laravel
+Atur koneksi database di `.env`. Jangan commit `.env`, token, password, PIN, atau credential produksi.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Commands
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+composer run dev     # server, queue, log, Vite
+npm run build        # asset production
+php artisan test     # seluruh test
+php artisan scribe:generate
+```
 
-## Laravel Sponsors
+## API
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Dokumentasi interaktif:
 
-### Premium Partners
+```text
+GET /docs
+GET /docs.postman
+GET /docs.openapi
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Semua endpoint selain `POST /api/auth/token` membutuhkan header:
 
-## Contributing
+```http
+Authorization: Bearer <SANCTUM_TOKEN>
+Accept: application/json
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Response sukses:
 
-## Code of Conduct
+```json
+{"success":true,"data":{},"message":null}
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Response error:
 
-## Security Vulnerabilities
+```json
+{"success":false,"data":null,"message":"Validasi gagal.","errors":{}}
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Endpoint
+
+- Auth: token, logout
+- Catalog: categories, products, product detail
+- Shifts: active, open, close
+- Orders: checkout, list, detail, hold, complete, void
+- Payments: create, list, refund
+
+`POST /api/orders` adalah atomic checkout existing: order, payment, dan stock movement ditulis dalam satu DB transaction. Harga selalu dibaca dari master. Request identik dengan `submission_token` sama bersifat idempotent.
+
+## Contoh alur API
+
+### 1. Login
+
+```bash
+TOKEN=$(curl -s https://pos.zorroserver.net/api/auth/token \
+  -H 'Content-Type: application/json' \
+  -d '{"login":"kasir","password":"<PASSWORD>","device_name":"external-client"}' \
+  | jq -r '.data.token')
+```
+
+### 2. Buka shift
+
+```bash
+curl https://pos.zorroserver.net/api/shifts/open \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"opening_cash":200000}'
+```
+
+### 3. Lihat catalog
+
+```bash
+curl https://pos.zorroserver.net/api/products?is_available=1 \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Accept: application/json'
+```
+
+### 4. Checkout order
+
+```bash
+SUBMISSION_TOKEN=$(python3 -c 'import uuid; print(uuid.uuid4())')
+
+curl https://pos.zorroserver.net/api/orders \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "{
+    \"submission_token\":\"$SUBMISSION_TOKEN\",
+    \"table_number\":\"A1\",
+    \"customer_name\":\"Budi\",
+    \"order_type\":\"DINE_IN\",
+    \"items\":[{
+      \"product_id\":1,
+      \"quantity\":1,
+      \"modifier_ids\":[]
+    }],
+    \"payment\":{
+      \"method\":\"CASH\",
+      \"received_amount\":50000
+    }
+  }"
+```
+
+### 5. Complete/idempotency check
+
+```bash
+curl -X POST https://pos.zorroserver.net/api/orders/1/complete \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "{\"submission_token\":\"$SUBMISSION_TOKEN\"}"
+```
+
+### 6. Tutup shift
+
+```bash
+curl -X POST https://pos.zorroserver.net/api/shifts/1/close \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"actual_cash":250000,"notes":"Shift selesai"}'
+```
+
+## Security
+
+- Route API memakai `auth:sanctum`.
+- Cashier hanya dapat membaca/mengubah order miliknya.
+- Void/refund membutuhkan manager aktif, `approved_by`, dan PIN manager.
+- Secret tidak boleh disimpan di source.
+- Nominal uang berupa integer rupiah.
+
+## Printer Bluetooth
+
+Primary transport web memakai Web Bluetooth BLE/GATT. Chrome Android tertentu tidak menyediakan `navigator.bluetooth.getDevices()`, sehingga permission printer tidak bisa dipulihkan setelah reload dan chooser perlu dibuka ulang. Ini batas browser, bukan Laravel.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT

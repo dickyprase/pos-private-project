@@ -1,0 +1,4 @@
+<?php
+namespace App\Http\Controllers\Api;
+use App\Actions\Shifts\CloseShift; use App\Actions\Shifts\OpenShift; use App\Http\Requests\Api\CloseShiftRequest; use App\Http\Requests\Api\OpenShiftRequest; use App\Http\Resources\ShiftResource; use App\Models\Shift; use Illuminate\Http\JsonResponse; use Illuminate\Http\Request;
+/** @group Shifts */ class ShiftController extends ApiController { public function active(Request $r):JsonResponse{$s=$r->user()->activeShift();return $this->success($s?new ShiftResource($s):null);} public function open(OpenShiftRequest $r,OpenShift $a):JsonResponse{return $this->success(new ShiftResource($a->handle($r->user(),$r->integer('opening_cash'))),'Shift dibuka.',201);} public function close(CloseShiftRequest $r,Shift $shift,CloseShift $a):JsonResponse{return $this->success(new ShiftResource($a->handle($shift,$r->user(),$r->integer('actual_cash'),$r->input('notes'))),'Shift ditutup.');}}

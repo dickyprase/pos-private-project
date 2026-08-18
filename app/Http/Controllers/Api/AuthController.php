@@ -1,0 +1,4 @@
+<?php
+namespace App\Http\Controllers\Api;
+use App\Actions\Auth\AuthenticateUser; use App\Http\Requests\Api\TokenRequest; use Illuminate\Http\JsonResponse; use Illuminate\Http\Request;
+/** @group Auth */ class AuthController extends ApiController { /** Buat token Sanctum. @unauthenticated @bodyParam login string required Username/email. Example: kasir @bodyParam password string required Password. Example: password */ public function token(TokenRequest $r,AuthenticateUser $a):JsonResponse{$u=$a->handle($r->string('login'),$r->string('password'),$r);$t=$u->createToken($r->input('device_name','external-client'))->plainTextToken;return $this->success(['token'=>$t,'token_type'=>'Bearer','user'=>['id'=>$u->id,'name'=>$u->name,'username'=>$u->username,'role'=>$u->role->value]],'Login berhasil.');} /** Revoke token aktif. */ public function logout(Request $r):JsonResponse{$r->user()->currentAccessToken()?->delete();return $this->success(null,'Token dicabut.');}}
