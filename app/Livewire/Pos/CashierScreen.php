@@ -400,6 +400,14 @@ class CashierScreen extends Component
         $order = \App\Models\Order::query()->with('items.modifiers', 'payment', 'cashier')->findOrFail($this->lastOrderId);
         abort_unless(auth()->user()->hasRole('OWNER', 'MANAGER') || $order->cashier_id === auth()->id(), 403);
         $receipt = app(\App\Services\EscPosReceiptBuilder::class)->build($order);
+        $this->dispatch('print-receipt', escposBase64: base64_encode($receipt));
+    }
+
+    public function printBrowserReceipt(): void
+    {
+        if (! $this->lastOrderId) return;
+        $order = Order::findOrFail($this->lastOrderId);
+        abort_unless(auth()->user()->hasRole('OWNER', 'MANAGER') || $order->cashier_id === auth()->id(), 403);
         $this->dispatch('open-receipt', url: route('orders.receipt', $order));
     }
 

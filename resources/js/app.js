@@ -1,24 +1,26 @@
 import './bootstrap';
 import './mobile-ux';
+import './printer-bluetooth';
 
 window.formatCurrency = (value) => new Intl.NumberFormat('id-ID', {
     maximumFractionDigits: 0,
 }).format(Number(value) || 0);
 
 document.addEventListener('alpine:init', () => {
-    window.Alpine.data('currencyInput', (amount) => ({
+    window.Alpine.data('currencyInput', (amount, total = 0) => ({
         amount,
+        total: Number(total) || 0,
         display: '',
+        get change() { return Math.max(0, Number(this.amount) - this.total); },
         init() {
             this.display = window.formatCurrency(this.amount);
-            this.$watch('amount', (value) => {
-                this.display = window.formatCurrency(value);
-            });
+            this.$watch('amount', (value) => { this.display = window.formatCurrency(value); });
         },
         update(event) {
             const digits = event.target.value.replace(/\D/g, '');
             this.amount = digits === '' ? 0 : Number(digits);
             this.display = digits === '' ? '' : window.formatCurrency(this.amount);
+            this.$wire.set('receivedAmount', this.amount);
             this.$nextTick(() => { event.target.value = this.display; });
         },
     }));
