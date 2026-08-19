@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\ModifierOption;
 use App\Models\Product;
 use App\Models\StoreSetting;
+use App\Models\Order;
 use App\Services\PricingService;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -70,6 +71,10 @@ class CashierScreen extends Component
     public string $itemNotes = '';
 
     public bool $itemNoteOpen = false;
+
+    public bool $historyOpen = false;
+
+    public ?int $historyDetailId = null;
 
     public ?int $editingItemIndex = null;
 
@@ -396,6 +401,28 @@ class CashierScreen extends Component
         abort_unless(auth()->user()->hasRole('OWNER', 'MANAGER') || $order->cashier_id === auth()->id(), 403);
         $receipt = app(\App\Services\EscPosReceiptBuilder::class)->build($order);
         $this->dispatch('print-receipt', escposBase64: base64_encode($receipt));
+    }
+
+    #[Computed]
+    public function recentOrders()
+    {
+        return Order::query()->with('payment')->where('cashier_id', auth()->id())->latest()->limit(30)->get();
+    }
+
+    public function openHistory(): void { $this->historyOpen = true; }
+
+    public function openHistoryDetail(int $id): void
+    {
+        abort_unless(Order::whereKey($id)->where('cashier_id', auth()->id())->exists(), 403);
+        $this->historyDetailId = $id;
+    }
+
+    public function closeHistory(): void { $this->historyOpen = false; $this->historyDetailId = null; }
+
+    public function printAndStartNewOrder(): void
+    {
+        $this->printLastReceipt();
+        $this->startNewOrder();
     }
 
     public function startNewOrder(): void

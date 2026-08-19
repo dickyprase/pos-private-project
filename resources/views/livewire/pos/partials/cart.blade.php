@@ -15,12 +15,14 @@
     </div>
 </div>
 
-<div class="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-3 py-2 sm:px-4">
+<div class="shrink-0 px-3 py-2 sm:px-4">
     <div class="mb-3 grid grid-cols-2 gap-2 rounded-2xl border border-brand-100 bg-brand-50/60 p-3">
         <label class="block"><span class="mb-1.5 block text-xs font-bold text-stone-700">Nomor meja <span class="text-rose-600">*</span></span><input wire:model="tableNumber" class="pos-field bg-white" placeholder="A-03">@error('tableNumber')<span class="mt-1 block text-[11px] font-semibold text-rose-600">{{ $message }}</span>@enderror</label>
         <label class="block"><span class="mb-1.5 block text-xs font-bold text-stone-700">Atas nama <span class="text-rose-600">*</span></span><input wire:model="customerName" class="pos-field bg-white" placeholder="Nama pelanggan">@error('customerName')<span class="mt-1 block text-[11px] font-semibold text-rose-600">{{ $message }}</span>@enderror</label>
     </div>
+</div>
 
+<div class="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-3 py-2 sm:px-4">
     @forelse($cart as $i => $item)
         <article data-cart-item wire:key="{{ $mount ?? 'cart' }}-cart-{{ $item['key'] }}" class="cart-item-enter mb-2 rounded-xl border border-stone-200 border-l-4 border-l-brand-500 bg-[#fffdf8] p-2.5 shadow-sm shadow-stone-200/40">
             <div class="flex gap-2.5">

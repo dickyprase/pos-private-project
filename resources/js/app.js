@@ -1,5 +1,6 @@
 import './bootstrap';
-import './printer-bluetooth';
+import './printer-native';
+import './mobile-ux';
 
 window.formatCurrency = (value) => new Intl.NumberFormat('id-ID', {
     maximumFractionDigits: 0,
@@ -25,7 +26,18 @@ document.addEventListener('alpine:init', () => {
 });
 
 const toggleMobileMenu = () => {
-    document.querySelector('[data-mobile-nav]')?.classList.toggle('hidden');
+    const nav = document.querySelector('[data-mobile-nav]');
+    if (!nav) return;
+    const open = nav.classList.toggle('hidden') === false;
+    document.querySelectorAll('[data-mobile-menu]').forEach((button) => button.setAttribute('aria-expanded', String(open)));
+};
+
+const syncSidebar = (open) => {
+    const sidebar = document.querySelector('[data-sidebar]');
+    const backdrop = document.querySelector('[data-sidebar-backdrop]');
+    sidebar?.classList.toggle('-translate-x-full', !open);
+    backdrop?.classList.toggle('hidden', !open);
+    document.body.classList.toggle('overflow-hidden', open && window.innerWidth < 1024);
 };
 
 document.addEventListener('click', (event) => {
@@ -34,24 +46,18 @@ document.addEventListener('click', (event) => {
     const sidebar = document.querySelector('[data-sidebar]');
     const backdrop = document.querySelector('[data-sidebar-backdrop]');
     if (event.target.closest('[data-sidebar-open]')) {
-        sidebar?.classList.remove('-translate-x-full');
-        backdrop?.classList.remove('hidden');
+        syncSidebar(true);
     }
     if (event.target.closest('[data-sidebar-close]') || event.target.closest('[data-sidebar-backdrop]')) {
-        sidebar?.classList.add('-translate-x-full');
-        backdrop?.classList.add('hidden');
+        syncSidebar(false);
     }
 });
 
 window.addEventListener('resize', () => {
     const sidebar = document.querySelector('[data-sidebar]');
     const backdrop = document.querySelector('[data-sidebar-backdrop]');
-    if (window.innerWidth >= 1024) {
-        sidebar?.classList.remove('-translate-x-full');
-        backdrop?.classList.add('hidden');
-    } else {
-        sidebar?.classList.add('-translate-x-full');
-    }
+    if (window.innerWidth >= 1024) syncSidebar(true);
+    else syncSidebar(false);
 });
 
 document.addEventListener('keydown', (event) => {
@@ -82,6 +88,7 @@ const updatePosClock = () => {
             minute: '2-digit',
             second: '2-digit',
             hour12: false,
+            timeZone: 'Asia/Jakarta',
         }).format(now);
     }
     if (date) {
@@ -90,6 +97,7 @@ const updatePosClock = () => {
             day: 'numeric',
             month: 'long',
             year: 'numeric',
+            timeZone: 'Asia/Jakarta',
         }).format(now);
         date.textContent = formatted.charAt(0).toUpperCase() + formatted.slice(1);
     }

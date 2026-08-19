@@ -40,10 +40,12 @@
             <div class="ml-auto flex items-center gap-2">
                 <div wire:ignore class="flex items-center gap-2">
                     <button type="button" data-printer-pair class="pressable min-h-11 rounded-xl border border-orange-200 bg-orange-50 px-3 text-xs font-bold text-orange-700 hover:bg-orange-100">Hubungkan Printer</button>
+                    <button type="button" data-fullscreen-toggle class="pressable grid size-11 place-items-center rounded-xl border border-stone-200 bg-white text-stone-600 hover:bg-stone-50" aria-label="Aktifkan layar penuh" title="Layar penuh"><span data-fullscreen-icon aria-hidden="true">⛶</span></button>
                     <span data-printer-dot class="size-2.5 rounded-full bg-red-500"></span>
                     <span data-printer-status class="hidden max-w-40 truncate text-[11px] font-semibold text-stone-500 sm:block">Belum terhubung</span>
                     <button type="button" data-printer-forget class="hidden text-[10px] font-semibold text-stone-400 underline">Ganti</button>
                 </div>
+                <button type="button" wire:click="openHistory" class="pressable hidden min-h-11 rounded-xl border border-stone-200 bg-white px-3 text-sm font-semibold text-stone-600 hover:bg-stone-50 sm:block">Riwayat</button>
                 @if($heldOrders->isNotEmpty())
                     <button type="button" wire:click="$toggle('heldOpen')" class="pressable hidden min-h-11 rounded-xl border border-stone-200 bg-white px-3 text-sm font-semibold text-stone-600 hover:bg-stone-50 sm:block">Held ({{ $heldOrders->count() }})</button>
                 @endif
@@ -113,7 +115,7 @@
                                 $icon = $productIcons[$slug] ?? '•';
                                 $tone = $productTones[$slug] ?? 'bg-stone-100';
                             @endphp
-                            <button data-product-card type="button" wire:key="product-{{ $product->id }}" wire:click="quickAdd({{ $product->id }})" class="pressable group relative min-h-44 overflow-hidden rounded-3xl border border-stone-200 bg-white p-3 text-left shadow-sm transition duration-150 ease-out active:scale-95 active:border-brand-400 active:ring-4 active:ring-brand-100 hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md disabled:hover:translate-y-0" @disabled(!$product->is_available)>
+                            <button data-product-card type="button" wire:key="product-{{ $product->id }}" wire:click="quickAdd({{ $product->id }})" class="pressable group relative min-h-40 overflow-hidden rounded-2xl border border-stone-200 bg-white p-2.5 text-left shadow-sm transition duration-150 ease-out active:scale-95 active:border-brand-400 active:ring-4 active:ring-brand-100 hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md disabled:hover:translate-y-0" @disabled(!$product->is_available)>
                                 @if($product->image_path)
                                     <img src="{{ asset('storage/'.$product->image_path) }}" alt="" class="aspect-[4/3] w-full rounded-2xl object-cover">
                                 @else
@@ -273,14 +275,36 @@
     @endif
 
     @if($successOpen)
-        <div class="fixed inset-0 z-[70] grid place-items-center bg-stone-950/40 p-3 backdrop-blur-[2px]">
+        <div class="fixed inset-0 z-[70] grid place-items-center bg-stone-950/40 p-3 backdrop-blur-[2px]" x-data @keydown.escape.window="$wire.set('successOpen', false)">
+            <button type="button" wire:click="$set('successOpen', false)" class="absolute inset-0 size-full" aria-label="Tutup hasil pembayaran"></button>
             <section class="w-full max-w-md rounded-[28px] bg-white p-6 text-center shadow-2xl sm:p-8" role="dialog" aria-modal="true">
                 <div class="mx-auto grid size-16 place-items-center rounded-full bg-emerald-100 text-emerald-700"><svg viewBox="0 0 24 24" class="size-8" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg></div>
                 <h2 class="mt-4 text-xl font-black">Pembayaran Berhasil</h2><p class="mt-1 text-sm text-stone-500">Transaksi #{{ $lastOrderNumber }} telah tersimpan.</p>
                 <div class="mt-5 rounded-2xl bg-stone-100 p-4"><p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Total</p><p class="mt-1 text-2xl font-black">Rp {{ number_format($lastOrderTotal, 0, ',', '.') }}</p></div>
-                <div class="mt-5 grid grid-cols-2 gap-2"><button type="button" wire:click="printLastReceipt" class="pressable min-h-12 rounded-2xl border border-stone-200 px-4 text-sm font-bold text-stone-700 hover:bg-stone-50">Cetak Struk</button><button type="button" wire:click="startNewOrder" class="pressable min-h-12 rounded-2xl bg-brand-600 px-4 text-sm font-bold text-white hover:bg-brand-700">Pesanan Baru</button></div>
+                <div class="relative z-10 mt-5 grid grid-cols-1 gap-2"><button type="button" wire:click="printLastReceipt" class="pressable min-h-12 rounded-2xl border border-stone-200 px-4 text-sm font-bold text-stone-700 hover:bg-stone-50">Cetak Struk Bluetooth</button><button type="button" wire:click="printAndStartNewOrder" class="pressable min-h-12 rounded-2xl bg-brand-600 px-4 text-sm font-bold text-white hover:bg-brand-700">Cetak Struk & Pesanan Baru</button><button type="button" wire:click="startNewOrder" class="pressable min-h-12 rounded-2xl bg-stone-100 px-4 text-sm font-bold text-stone-700 hover:bg-stone-200">Pesanan Baru</button></div>
             </section>
         </div>
+    @endif
+
+    @if($historyOpen)
+        <div class="fixed inset-0 z-[68] grid place-items-center bg-stone-950/40 p-3 backdrop-blur-[2px]">
+            <button type="button" wire:click="closeHistory" class="absolute inset-0 size-full" aria-label="Tutup riwayat"></button>
+            <section class="relative z-10 flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-[28px] bg-white shadow-2xl" role="dialog" aria-modal="true">
+                <div class="flex items-center justify-between border-b border-stone-200 p-5"><div><p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Kasir</p><h2 class="text-xl font-black">Riwayat Transaksi</h2></div><x-ui.modal-close wire:click="closeHistory" label="Tutup riwayat" /></div>
+                <div class="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-4"><div class="space-y-2">
+                    @forelse($this->recentOrders as $recent)
+                        <div class="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3"><div class="min-w-0 flex-1"><p class="font-bold">{{ $recent->order_number }}</p><p class="text-xs text-stone-500">{{ $recent->created_at->format('d M Y H:i') }} · {{ $recent->payment?->method->value ?? '-' }}</p></div><p class="font-black">Rp {{ number_format($recent->grand_total, 0, ',', '.') }}</p><button type="button" wire:click="openHistoryDetail({{ $recent->id }})" class="pressable rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-bold text-brand-700">Detail</button><a target="_blank" href="{{ route('orders.receipt', $recent) }}" class="pressable rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-bold text-stone-700">Print</a></div>
+                    @empty <p class="py-10 text-center text-sm text-stone-500">Belum ada transaksi.</p> @endforelse
+                </div></div>
+            </section>
+        </div>
+    @endif
+
+    @if($historyDetailId)
+        @php($historyDetail = \App\Models\Order::with('items.modifiers', 'payment')->find($historyDetailId))
+        @if($historyDetail)
+            <div class="fixed inset-0 z-[69] grid place-items-center bg-stone-950/40 p-3 backdrop-blur-[2px]"><button type="button" wire:click="$set('historyDetailId', null)" class="absolute inset-0 size-full" aria-label="Tutup detail"></button><section class="relative z-10 w-full max-w-lg rounded-[28px] bg-white p-5 shadow-2xl"><div class="flex items-start justify-between"><div><p class="text-xs text-stone-500">Detail transaksi</p><h2 class="text-xl font-black">{{ $historyDetail->order_number }}</h2></div><x-ui.modal-close wire:click="$set('historyDetailId', null)" label="Tutup detail" /></div><div class="mt-4 space-y-2">@foreach($historyDetail->items as $item)<div class="flex justify-between gap-3 text-sm"><span>{{ $item->quantity }}x {{ $item->product_name_snapshot }}</span><b>Rp {{ number_format($item->line_total, 0, ',', '.') }}</b></div>@endforeach</div><div class="mt-5 flex items-center justify-between border-t border-stone-200 pt-4"><b>Total</b><b>Rp {{ number_format($historyDetail->grand_total, 0, ',', '.') }}</b></div><a target="_blank" href="{{ route('orders.receipt', $historyDetail) }}" class="pressable mt-5 flex min-h-12 items-center justify-center rounded-2xl bg-brand-600 font-bold text-white">Cetak Struk</a></section></div>
+        @endif
     @endif
     <x-ui.alert-modal />
 </div>
