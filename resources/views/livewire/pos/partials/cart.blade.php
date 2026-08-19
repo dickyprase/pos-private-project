@@ -15,7 +15,7 @@
     </div>
 </div>
 
-<div class="shrink-0 px-3 py-2 sm:px-4">
+<div class="sticky top-0 z-10 shrink-0 bg-[#fafafa] px-3 py-2 sm:px-4">
     <div class="mb-3 grid grid-cols-2 gap-2 rounded-2xl border border-brand-100 bg-brand-50/60 p-3">
         <label class="block"><span class="mb-1.5 block text-xs font-bold text-stone-700">Nomor meja <span class="text-rose-600">*</span></span><input wire:model="tableNumber" class="pos-field bg-white" placeholder="A-03">@error('tableNumber')<span class="mt-1 block text-[11px] font-semibold text-rose-600">{{ $message }}</span>@enderror</label>
         <label class="block"><span class="mb-1.5 block text-xs font-bold text-stone-700">Atas nama <span class="text-rose-600">*</span></span><input wire:model="customerName" class="pos-field bg-white" placeholder="Nama pelanggan">@error('customerName')<span class="mt-1 block text-[11px] font-semibold text-rose-600">{{ $message }}</span>@enderror</label>

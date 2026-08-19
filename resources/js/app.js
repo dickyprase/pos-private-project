@@ -1,5 +1,4 @@
 import './bootstrap';
-import './printer-native';
 import './mobile-ux';
 
 window.formatCurrency = (value) => new Intl.NumberFormat('id-ID', {
@@ -38,6 +37,12 @@ const syncSidebar = (open) => {
     sidebar?.classList.toggle('-translate-x-full', !open);
     backdrop?.classList.toggle('hidden', !open);
     document.body.classList.toggle('overflow-hidden', open && window.innerWidth < 1024);
+};
+
+const bindUi = () => {
+    document.querySelectorAll('[data-sidebar-open]').forEach((button) => { button.onclick = () => syncSidebar(true); });
+    document.querySelectorAll('[data-sidebar-close], [data-sidebar-backdrop]').forEach((button) => { button.onclick = () => syncSidebar(false); });
+    updatePosClock();
 };
 
 document.addEventListener('click', (event) => {
@@ -105,3 +110,11 @@ const updatePosClock = () => {
 
 updatePosClock();
 window.setInterval(updatePosClock, 1000);
+document.addEventListener('livewire:navigated', bindUi);
+document.addEventListener('livewire:initialized', bindUi);
+document.addEventListener('livewire:load', bindUi);
+bindUi();
+
+document.addEventListener('livewire:init', () => {
+    window.Livewire.on('open-receipt', ({ url }) => { if (url) window.open(url, '_blank', 'noopener'); });
+});

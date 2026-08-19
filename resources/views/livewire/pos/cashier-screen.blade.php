@@ -38,13 +38,6 @@
             </div>
 
             <div class="ml-auto flex items-center gap-2">
-                <div wire:ignore class="flex items-center gap-2">
-                    <button type="button" data-printer-pair class="pressable min-h-11 rounded-xl border border-orange-200 bg-orange-50 px-3 text-xs font-bold text-orange-700 hover:bg-orange-100">Hubungkan Printer</button>
-                    <button type="button" data-fullscreen-toggle class="pressable grid size-11 place-items-center rounded-xl border border-stone-200 bg-white text-stone-600 hover:bg-stone-50" aria-label="Aktifkan layar penuh" title="Layar penuh"><span data-fullscreen-icon aria-hidden="true">⛶</span></button>
-                    <span data-printer-dot class="size-2.5 rounded-full bg-red-500"></span>
-                    <span data-printer-status class="hidden max-w-40 truncate text-[11px] font-semibold text-stone-500 sm:block">Belum terhubung</span>
-                    <button type="button" data-printer-forget class="hidden text-[10px] font-semibold text-stone-400 underline">Ganti</button>
-                </div>
                 <button type="button" wire:click="openHistory" class="pressable hidden min-h-11 rounded-xl border border-stone-200 bg-white px-3 text-sm font-semibold text-stone-600 hover:bg-stone-50 sm:block">Riwayat</button>
                 @if($heldOrders->isNotEmpty())
                     <button type="button" wire:click="$toggle('heldOpen')" class="pressable hidden min-h-11 rounded-xl border border-stone-200 bg-white px-3 text-sm font-semibold text-stone-600 hover:bg-stone-50 sm:block">Held ({{ $heldOrders->count() }})</button>
@@ -242,7 +235,7 @@
                     </div></fieldset>
                     @if($paymentMethod === 'CASH')
                         <div class="space-y-3">
-                            <label class="block"><span class="mb-2 block text-sm font-bold">Uang diterima</span><div x-data="currencyInput($wire.entangle('receivedAmount').live)" class="relative"><span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-stone-500">Rp</span><input x-model="display" @input="update($event)" type="text" inputmode="numeric" autocomplete="off" class="h-14 w-full rounded-2xl border border-stone-200 bg-stone-50 pl-11 pr-4 text-right text-xl font-bold tabular-nums focus:bg-white"></div></label>
+                            <label class="block"><span class="mb-2 block text-sm font-bold">Uang diterima</span><div x-data="currencyInput($wire.entangle('receivedAmount').live)" class="relative"><span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-stone-500">Rp</span><input x-model="display" @input="update($event)" wire:ignore type="text" inputmode="numeric" autocomplete="off" class="h-14 w-full rounded-2xl border border-stone-200 bg-stone-50 pl-11 pr-4 text-right text-xl font-bold tabular-nums focus:bg-white"></div></label>
                             <div class="grid grid-cols-3 gap-2">@foreach($cashOptions as $cash)<button type="button" wire:click="$set('receivedAmount', {{ $cash }})" class="pressable min-h-11 rounded-xl border border-stone-200 bg-white px-2 text-xs font-bold hover:bg-stone-50">{{ $cash === $grandTotal ? 'Uang pas' : number_format($cash, 0, ',', '.') }}</button>@endforeach</div>
                             <div class="flex items-center justify-between rounded-2xl bg-emerald-50 px-4 py-3"><span class="text-sm font-semibold text-emerald-800">Kembalian</span><span class="font-black text-emerald-800">Rp {{ number_format(max(0, $receivedAmount - $grandTotal), 0, ',', '.') }}</span></div>
                         </div>
@@ -281,7 +274,7 @@
                 <div class="mx-auto grid size-16 place-items-center rounded-full bg-emerald-100 text-emerald-700"><svg viewBox="0 0 24 24" class="size-8" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg></div>
                 <h2 class="mt-4 text-xl font-black">Pembayaran Berhasil</h2><p class="mt-1 text-sm text-stone-500">Transaksi #{{ $lastOrderNumber }} telah tersimpan.</p>
                 <div class="mt-5 rounded-2xl bg-stone-100 p-4"><p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Total</p><p class="mt-1 text-2xl font-black">Rp {{ number_format($lastOrderTotal, 0, ',', '.') }}</p></div>
-                <div class="relative z-10 mt-5 grid grid-cols-1 gap-2"><button type="button" wire:click="printLastReceipt" class="pressable min-h-12 rounded-2xl border border-stone-200 px-4 text-sm font-bold text-stone-700 hover:bg-stone-50">Cetak Struk Bluetooth</button><button type="button" wire:click="printAndStartNewOrder" class="pressable min-h-12 rounded-2xl bg-brand-600 px-4 text-sm font-bold text-white hover:bg-brand-700">Cetak Struk & Pesanan Baru</button><button type="button" wire:click="startNewOrder" class="pressable min-h-12 rounded-2xl bg-stone-100 px-4 text-sm font-bold text-stone-700 hover:bg-stone-200">Pesanan Baru</button></div>
+                <div class="relative z-10 mt-5 grid grid-cols-1 gap-2"><button type="button" wire:click="printLastReceipt" class="pressable min-h-12 rounded-2xl border border-stone-200 px-4 text-sm font-bold text-stone-700 hover:bg-stone-50">Cetak Struk</button><button type="button" wire:click="printAndStartNewOrder" class="pressable min-h-12 rounded-2xl bg-brand-600 px-4 text-sm font-bold text-white hover:bg-brand-700">Cetak Struk & Pesanan Baru</button><button type="button" wire:click="startNewOrder" class="pressable min-h-12 rounded-2xl bg-stone-100 px-4 text-sm font-bold text-stone-700 hover:bg-stone-200">Pesanan Baru</button></div>
             </section>
         </div>
     @endif

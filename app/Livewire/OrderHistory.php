@@ -13,15 +13,23 @@ class OrderHistory extends Component
 
     public string $search = '';
     public string $status = '';
+    public ?int $actionOrderId = null;
+    public ?int $detailOrderId = null;
+    public string $detailOrderNumber = '';
+    public ?Order $detailOrder = null;
 
     public function updatedSearch(): void { $this->resetPage(); }
     public function updatedStatus(): void { $this->resetPage(); }
 
     public function openDetail(int $orderId): void
     {
-        $order = Order::findOrFail($orderId);
-        $this->dispatch('order-detail-modal', order: $order->load('items.modifiers', 'payment'));
+        $order = Order::with('items.modifiers', 'payment', 'cashier')->findOrFail($orderId);
+        $this->detailOrder = $order;
+        $this->detailOrderId = $order->id;
+        $this->detailOrderNumber = $order->order_number;
     }
+
+    public function closeDetail(): void { $this->detailOrderId = null; $this->detailOrder = null; }
 
     public function render()
     {
