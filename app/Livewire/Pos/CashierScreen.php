@@ -340,7 +340,7 @@ class CashierScreen extends Component
         }
         $this->validateOrderIdentity();
         $this->refreshPaymentAvailability();
-        $this->receivedAmount = $this->grandTotal;
+        $this->receivedAmount = 0;
         $this->cartOpen = false;
         $this->paymentOpen = true;
     }

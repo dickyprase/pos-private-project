@@ -40,7 +40,7 @@
             await window.PrinterManager.init();
         };
         document.addEventListener('DOMContentLoaded', bindPrinterUi);
-        window.addEventListener('printer-notice', event => alert(event.detail.message));
+        window.addEventListener('printer-notice', event => { if (window.MobileUX?.toast) window.MobileUX.toast(event.detail.message, event.detail.type || 'info'); else alert(event.detail.message); });
     </script>
 </body>
 </html>

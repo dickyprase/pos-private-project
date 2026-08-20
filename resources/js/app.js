@@ -6,25 +6,50 @@ window.formatCurrency = (value) => new Intl.NumberFormat('id-ID', {
     maximumFractionDigits: 0,
 }).format(Number(value) || 0);
 
-document.addEventListener('alpine:init', () => {
-    window.Alpine.data('currencyInput', (amount, total = 0) => ({
-        amount,
-        total: Number(total) || 0,
-        display: '',
-        get change() { return Math.max(0, Number(this.amount) - this.total); },
+window.formatCashInput = (input) => {
+    const digits = String(input.value || '').replace(/\D/g, '');
+    input.value = digits ? window.formatCurrency(digits) : '0';
+};
+
+document.addEventListener('input', (event) => {
+    const input = event.target.closest?.('[data-currency-input]');
+    if (input) window.formatCashInput(input);
+}, true);
+
+const registerCurrencyInput = () => {
+    if (!window.Alpine || window.Alpine.__kopiposCurrencyInput) return;
+    window.Alpine.__kopiposCurrencyInput = true;
+    window.Alpine.data('currencyInput', (initialAmount = 0, total = 0) => ({
+        received: Number(initialAmount) || 0,
+        grandTotal: Number(total) || 0,
+        displayReceived: '',
         init() {
-            this.display = window.formatCurrency(this.amount);
-            this.$watch('amount', (value) => { this.display = window.formatCurrency(value); });
+            this.setReceived(this.received, false);
         },
-        update(event) {
-            const digits = event.target.value.replace(/\D/g, '');
-            this.amount = digits === '' ? 0 : Number(digits);
-            this.display = digits === '' ? '' : window.formatCurrency(this.amount);
-            this.$wire.set('receivedAmount', this.amount);
-            this.$nextTick(() => { event.target.value = this.display; });
+        format(value) {
+            return value > 0 ? window.formatCurrency(value) : '';
+        },
+        setReceived(value, sync = true) {
+            const digits = String(value ?? '').replace(/\D/g, '');
+            this.received = Number(digits || 0);
+            this.displayReceived = this.format(this.received);
+            if (this.$refs.receivedInput) this.$refs.receivedInput.value = this.displayReceived;
+            if (sync) this.$wire.set('receivedAmount', this.received);
+        },
+        handleReceivedInput(event) {
+            this.setReceived(event.target.value);
+        },
+        get change() {
+            return Math.max(0, this.received - this.grandTotal);
+        },
+        get displayChange() {
+            return window.formatCurrency(this.change);
         },
     }));
-});
+};
+
+if (window.Alpine) registerCurrencyInput();
+document.addEventListener('alpine:init', registerCurrencyInput);
 
 const toggleMobileMenu = () => {
     const nav = document.querySelector('[data-mobile-nav]');
