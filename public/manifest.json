@@ -1,12 +1,14 @@
 {
+    "id": "/",
     "name": "KopiPOS",
     "short_name": "KopiPOS",
     "description": "Point of Sale KopiKita",
     "lang": "id-ID",
-    "start_url": "/pos",
+    "start_url": "/login",
     "scope": "/",
     "display": "standalone",
-    "background_color": "#f5f5f4",
+    "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+    "background_color": "#fafaf9",
     "theme_color": "#f97316",
     "orientation": "any",
     "icons": [

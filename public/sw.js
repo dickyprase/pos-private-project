@@ -1,7 +1,7 @@
-const VERSION = 'kopipos-v1';
+const VERSION = 'kopipos-v2';
 const STATIC_CACHE = `${VERSION}-static`;
 const APP_SHELL = [
-    '/manifest.webmanifest',
+    '/manifest.json',
     '/icons/icon-192.png',
     '/icons/icon-512.png',
 ];
@@ -29,7 +29,7 @@ self.addEventListener('fetch', (event) => {
     if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
 
     const url = new URL(request.url);
-    if (url.pathname === '/manifest.webmanifest' || url.pathname.startsWith('/icons/')) {
+    if (url.pathname === '/manifest.json' || url.pathname.startsWith('/icons/')) {
         event.respondWith(caches.match(request).then((cached) => cached || fetch(request)));
         return;
     }

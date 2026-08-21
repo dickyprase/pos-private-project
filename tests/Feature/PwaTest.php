@@ -8,11 +8,11 @@ class PwaTest extends TestCase
 {
     public function test_pwa_artifacts_are_publicly_available(): void
     {
-        $this->assertFileExists(public_path('manifest.webmanifest'));
+        $this->assertFileExists(public_path('manifest.json'));
 
-        $manifest = json_decode(file_get_contents(public_path('manifest.webmanifest')), true, flags: JSON_THROW_ON_ERROR);
+        $manifest = json_decode(file_get_contents(public_path('manifest.json')), true, flags: JSON_THROW_ON_ERROR);
 
-        $this->assertSame('/pos', $manifest['start_url']);
+        $this->assertSame('/login', $manifest['start_url']);
         $this->assertSame('standalone', $manifest['display']);
         $this->assertFileExists(public_path('sw.js'));
         $this->assertFileExists(public_path('icons/icon-192.png'));
@@ -24,7 +24,7 @@ class PwaTest extends TestCase
         $layout = file_get_contents(resource_path('views/layouts/pos.blade.php'));
         $javascript = file_get_contents(resource_path('js/app.js'));
 
-        $this->assertStringContainsString('manifest.webmanifest', $layout);
+        $this->assertStringContainsString('manifest.json', $layout);
         $this->assertStringContainsString('apple-touch-icon', $layout);
         $this->assertStringContainsString("import './pwa';", $javascript);
     }
