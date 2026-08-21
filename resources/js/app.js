@@ -1,6 +1,7 @@
 import './bootstrap';
 import './mobile-ux';
 import './printer-bluetooth';
+import './pwa';
 
 window.formatCurrency = (value) => new Intl.NumberFormat('id-ID', {
     maximumFractionDigits: 0,
