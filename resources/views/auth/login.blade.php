@@ -14,7 +14,7 @@
     @vite(['resources/css/app.css','resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-[#fafaf9] text-stone-900 antialiased">
-<main class="relative isolate grid min-h-screen overflow-hidden lg:grid-cols-[1.08fr_.92fr]">
+<main class="relative isolate grid min-h-dvh overflow-x-hidden lg:grid-cols-[1.08fr_.92fr]">
     <div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div class="absolute -left-24 -top-24 size-72 rounded-full bg-orange-200/45 blur-3xl"></div>
         <div class="absolute -bottom-32 right-0 size-80 rounded-full bg-amber-100/60 blur-3xl"></div>
@@ -39,9 +39,9 @@
         <p class="relative text-xs text-stone-500">KopiPOS · Sistem operasional kedai</p>
     </section>
 
-    <section class="flex min-h-screen items-center justify-center px-5 py-8 sm:px-8 lg:px-12">
+    <section class="flex min-h-dvh items-start justify-center px-4 pb-8 pt-6 sm:items-center sm:px-8 sm:py-10 lg:px-12">
         <div class="w-full max-w-md">
-            <div class="mb-8 flex items-center justify-between lg:hidden">
+            <div class="mb-5 flex items-center justify-between lg:hidden">
                 <div class="flex items-center gap-3">
                     <span class="grid size-11 place-items-center rounded-2xl bg-orange-500 text-lg font-black text-white shadow-lg shadow-orange-200">K</span>
                     <div>
@@ -52,19 +52,19 @@
                 <button type="button" data-install-app hidden class="rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-bold text-orange-700 hover:bg-orange-100 focus:outline-none focus:ring-4 focus:ring-orange-100">Install aplikasi</button>
             </div>
 
-            <div class="rounded-[1.75rem] border border-stone-200/80 bg-white/95 p-6 shadow-[0_24px_70px_-30px_rgba(28,25,23,.35)] backdrop-blur sm:p-8">
-                <div class="mb-7">
+            <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-[0_18px_55px_-28px_rgba(28,25,23,.28)] sm:rounded-3xl sm:p-8">
+                <div class="mb-6">
                     <span class="inline-flex rounded-full bg-orange-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[.16em] text-orange-700">Selamat datang</span>
-                    <h2 class="mt-4 text-2xl font-black tracking-[-0.03em] text-stone-950">Masuk ke ruang kerja</h2>
+                    <h2 class="mt-3 text-2xl font-black tracking-[-0.03em] text-stone-950 sm:mt-4">Masuk ke ruang kerja</h2>
                     <p class="mt-2 text-sm leading-6 text-stone-500">Gunakan akun yang sudah terdaftar untuk melanjutkan.</p>
                 </div>
 
-                <form method="POST" action="{{ route('login.store') }}" class="space-y-5">
+                <form method="POST" action="{{ route('login.store') }}" class="space-y-4 sm:space-y-5">
                     @csrf
                     <div>
                         <label for="login" class="mb-2 block text-sm font-bold text-stone-700">Username atau email</label>
                         <div class="relative">
-                            <span class="pointer-events-none absolute inset-y-0 left-0 grid w-12 place-items-center text-stone-400" aria-hidden="true">
+                            <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-stone-400" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" class="size-5" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4.5 21a7.5 7.5 0 0 1 15 0"/></svg>
                             </span>
                             <input id="login" class="h-12 w-full rounded-xl border border-stone-200 bg-stone-50/70 pl-12 pr-4 text-sm font-medium outline-none transition placeholder:text-stone-400 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100" name="login" value="{{ old('login') }}" required autofocus autocomplete="username" inputmode="email" placeholder="Masukkan username atau email">
@@ -74,7 +74,7 @@
                     <div>
                         <label for="password" class="mb-2 block text-sm font-bold text-stone-700">Password</label>
                         <div class="relative">
-                            <span class="pointer-events-none absolute inset-y-0 left-0 grid w-12 place-items-center text-stone-400" aria-hidden="true">
+                            <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-stone-400" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" class="size-5" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M7 10V8a5 5 0 0 1 10 0v2m-9 0h8a2 2 0 0 1 2 2v7H6v-7a2 2 0 0 1 2-2Z"/></svg>
                             </span>
                             <input id="password" class="h-12 w-full rounded-xl border border-stone-200 bg-stone-50/70 pl-12 pr-12 text-sm font-medium outline-none transition placeholder:text-stone-400 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100" type="password" name="password" required autocomplete="current-password" placeholder="Masukkan password">

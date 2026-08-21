@@ -34,4 +34,16 @@ class PwaLoginUiTest extends TestCase
             ->assertSee('name="login"', false)
             ->assertSee('name="password"', false);
     }
+
+    public function test_login_uses_mobile_first_spacing_and_non_overlapping_fields(): void
+    {
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee('min-h-dvh', false)
+            ->assertSee('items-start', false)
+            ->assertSee('pt-6', false)
+            ->assertSee('rounded-2xl', false)
+            ->assertSee('pl-12', false)
+            ->assertSee('h-12', false);
+    }
 }
