@@ -4,12 +4,14 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\PosController;
 use App\Http\Controllers\Api\ShiftController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/auth/token', [AuthController::class, 'token']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/pos/bootstrap', [PosController::class, 'bootstrap']);
     Route::get('/categories', [CatalogController::class, 'categories']);
     Route::get('/products', [CatalogController::class, 'products']);
     Route::get('/products/{product}', [CatalogController::class, 'product']);
